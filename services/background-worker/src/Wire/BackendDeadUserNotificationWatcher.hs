@@ -141,3 +141,28 @@ startWorker amqp = do
         openConnection mConn
 
   async (openConnection Nothing)
+
+-- TODO: is the worker protected against sync and impure exceptions?  (log & sleep & restart if it breaks.)
+
+{-
+
+1750862712566   background-worker: ConnectionClosedException Abnormal "Network.Socket.recvBuf: resource vanished (Connection reset by peer)"
+1750862712566   {"level":"Info","msgs":["Trying to connect to RabbitMQ"]}
+1750862713567   {"error":"Network.Socket.recvBuf: resource vanished (Connection reset by peer)","level":"Error","msgs":["RabbitMQ channel closed"]}
+1750862713567   {"level":"Info","msgs":["Opening channel with RabbitMQ"]}
+1750862713567   {"domain":"wire.com","level":"Info","msgs":["Starting consumer"]}
+1750862713567   {"level":"Info","msgs":["Opening channel with RabbitMQ"]}
+1750862713567   {"level":"Info","msgs":["RabbitMQ channel opened"]}
+1750862715736   background-worker: Network.Socket.sendBuf: invalid argument (Bad file descriptor)
+
+the network library throws a few IOErrors, that's the lines starting with 'background-worker'.
+looks like this crashed the thread, we should catch this and log it more cleanly!  but this
+may be benign.
+
+julia says this is what happened:
+- add federated user to conv
+- federator 503ed
+- backend 200ed
+- client has wrong model of world now
+
+-}
